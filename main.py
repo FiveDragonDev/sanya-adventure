@@ -2,16 +2,18 @@ from random import randint
 from time import sleep
 
 defult_actions: str = ['Порыться в мусоре — 1', 'Сдать бутылки — 2', 'Посмотреть содержимое инвентаря — 3',
-					   'Посмотреть информацию — 4', 'Остановить игру — 0']
+					   'Посмотреть информацию — 4', 'Съесть что-нибудь — 5', 'Вылечить раны чем-то — 6',
+					   'Остановить игру — 0']
 items = {
 	'food': {
-		'trash': ['Кусок хлеба', 'Заплесневелый кусок хлеба']
+		'trash': ['Кусок хлеба', 'Заплесневелый кусок хлеба', 'Яблочный огрызок']
 	},
 	'clothes': {
 		'trash': ['Рваная рубашка', 'Грязные джинсы']
 	},
 	'consumables': {
-		'trash': ['Бутылка']
+		'trash': ['Бутылка', 'Грязный бинт'],
+		'defult': ['Стерильный бинт']
 	}
 }
 item_categories = ['food', 'clothes', 'consumables']
@@ -35,7 +37,7 @@ print(f'Добро пожаловать в приключения бомжа С�
 print(f'Ваша цель одна: ВЫЖИТЬ.')
 print(f'Удачи!)\n')
 
-actions_list: str = ', '.join(defult_actions)
+actions_list: str = '; '.join(defult_actions)
 print(f'Доступные действия: {actions_list}.')
 while True:
 	action = input('Ваше действие: ')
@@ -65,8 +67,11 @@ while True:
 			monies += 1 * len(bottles)
 			print(f'Вы получили {1 * len(bottles)} рублей продав {len(bottles)} бутылок')
 			bottles.clear()
-			for i in range(len(items_in_inventory['consumables'])):
-				items_in_inventory['consumables'].remove('Бутылка')
+			try:
+				for i in range(len(items_in_inventory['consumables'])):
+					items_in_inventory['consumables'].remove('Бутылка')
+			except:
+				pass
 		elif '3' in action:
 			items_in_inventory.update()
 			inventory = ''
@@ -84,7 +89,32 @@ while True:
 			print('')
 			print(f'Имя: Саня\n'
 				  f'{monies} рублёв в кармане\n'
-				  f'{health_status}, здоровье: {health}%\n')
+				  f'{health_status}, здоровье: {health if not wounded and not hungry else health - 1}%\n')
+		elif '5' in action:
+			if not hungry:
+				print('Вы не голодны и решаете не тратить еду в пустую.')
+				continue
+			elif len(items_in_inventory['food']) <= 0:
+				print('У вас нет еды.')
+				continue
+			eat = items_in_inventory['food'][randint(0, len(items_in_inventory['food']) - 1)]
+			hungry = False
+			hungry_time = 0
+			items_in_inventory['food'].remove(eat)
+			print(f'Вы съели {eat}, теперь вы не голодны.')
+		elif '6' in action:
+			if not wounded:
+				print('Вы не ранены и решаете не тратить расходники в пустую.')
+				continue
+			elif len(items_in_inventory['consumables']) <= 0:
+				print('У вас нет расходников.')
+				continue
+			consumables = items_in_inventory['consumables']
+			consumables[:] = (value for value in consumables if value != 'Бутылка')
+			consumable = consumables[randint(0, len(consumables) - 1)]
+			wounded = False
+			items_in_inventory['consumables'].remove(consumable)
+			print(f'Вы использовали {consumable}, теперь вы не истекаете кровью.')
 		elif '0' in action:
 			break
 		else:
