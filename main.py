@@ -22,10 +22,14 @@ items_in_inventory = {
 }
 monies: int = 0
 bottles = []
-health_statuses = ['Голоден', 'Ранен', 'Голодный и раненый', 'Мёртвый...', 'Всё хорошо']
+health = 100
+hungry_time = 0
+health_statuses = ['Голоден', 'Ранен', f'Голодный и раненый', 'Всё хорошо']
 wounded = False
 hungry = False
-health_status = health_statuses[1] if wounded else health_statuses[4]
+health_status = (health_statuses[1] if wounded
+				 else health_statuses[3]) if not hungry \
+	else (health_statuses[2] if wounded else health_statuses[0])
 
 print(f'Добро пожаловать в приключения бомжа Сани!')
 print(f'Ваша цель одна: ВЫЖИТЬ.')
@@ -50,6 +54,13 @@ while True:
 			items_in_inventory[random_category].append(item_from_trash)
 			if 'Бутылка' == item_from_trash:
 				bottles.append(item_from_trash)
+				if randint(0, 100) <= 10:
+					wounded = True
+					print(f'Вы порезались о разбитую бутылку!')
+			else:
+				if randint(0, 100) <= 2:
+					wounded = True
+					print(f'Вы поранились пока рылись в мусоре!')
 		elif '2' in action:
 			monies += 1 * len(bottles)
 			print(f'Вы получили {1 * len(bottles)} рублей продав {len(bottles)} бутылок')
@@ -67,14 +78,25 @@ while True:
 					inventory += ', '
 			print(f'Содержимое инвентаря: {inventory.lower()}')
 		elif '4' in action:
+			health_status = (health_statuses[1] if wounded
+				 else health_statuses[3]) if not hungry \
+				else (health_statuses[2] if wounded else health_statuses[0])
 			print('')
 			print(f'Имя: Саня\n'
 				  f'{monies} рублёв в кармане\n'
-				  f'{health_status}\n')
+				  f'{health_status}, здоровье: {health}%\n')
 		elif '0' in action:
 			break
 		else:
 			print('Некорректный выбор.')
+	hungry_time += 1
+	if hungry_time > 14:
+		hungry = True
+	if wounded or hungry:
+		health -= 1
+	if health <= 0:
+		print('Мёртв...')
+		break
 
 print(f'Игра окончена...')
 sleep(3.5)
