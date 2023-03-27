@@ -22,7 +22,7 @@ items_in_inventory = {
 	'clothes': [],
 	'consumables': []
 }
-monies: int = 0
+monies = 0
 bottles = []
 health = 100
 hungry_time = 0
@@ -37,6 +37,10 @@ print(f'Добро пожаловать в приключения бомжа С�
 print(f'Ваша цель одна: ВЫЖИТЬ.')
 print(f'Удачи!)\n')
 
+print(f'Так же, хочу сказать, что код этой игры есть в свободном доступе.'
+	  f' ВЫ можете его скачать и менять правила игры или добавлять, что вашей душе угодно!')
+print(f'https://github.com/FiveDragonYT/sanya-adventure\n\n')
+
 actions_list: str = '; '.join(defult_actions)
 print(f'Доступные действия: {actions_list}.')
 while True:
@@ -45,7 +49,7 @@ while True:
 	if not action:
 		print(f'Доступные действия: {actions_list}.')
 	else:
-		if '1' in action:
+		if '1' == action:
 			# получение рандомной категории предметов
 			random_category = str(item_categories[randint(0, len(item_categories)) - 1])
 			# получение рандомного массива предметов
@@ -63,16 +67,12 @@ while True:
 				if randint(0, 100) <= 2:
 					wounded = True
 					print(f'Вы поранились пока рылись в мусоре!')
-		elif '2' in action:
+		elif '2' == action:
 			monies += 1 * len(bottles)
 			print(f'Вы получили {1 * len(bottles)} рублей продав {len(bottles)} бутылок')
+			items_in_inventory['consumables'] = list(set(items_in_inventory['consumables']) - set(bottles))
 			bottles.clear()
-			try:
-				for i in range(len(items_in_inventory['consumables'])):
-					items_in_inventory['consumables'].remove('Бутылка')
-			except:
-				pass
-		elif '3' in action:
+		elif '3' == action:
 			items_in_inventory.update()
 			inventory = ''
 			for i in item_categories:
@@ -82,15 +82,15 @@ while True:
 				if i != item_categories[len(item_categories) - 1]:
 					inventory += ', '
 			print(f'Содержимое инвентаря: {inventory.lower()}')
-		elif '4' in action:
+		elif '4' == action:
 			health_status = (health_statuses[1] if wounded
-				 else health_statuses[3]) if not hungry \
+							 else health_statuses[3]) if not hungry \
 				else (health_statuses[2] if wounded else health_statuses[0])
 			print('')
 			print(f'Имя: Саня\n'
 				  f'{monies} рублёв в кармане\n'
 				  f'{health_status}, здоровье: {health if not wounded and not hungry else health - 1}%\n')
-		elif '5' in action:
+		elif '5' == action:
 			if not hungry:
 				print('Вы не голодны и решаете не тратить еду в пустую.')
 				continue
@@ -101,8 +101,8 @@ while True:
 			hungry = False
 			hungry_time = 0
 			items_in_inventory['food'].remove(eat)
-			print(f'Вы съели {eat}, теперь вы не голодны.')
-		elif '6' in action:
+			print(f'Вы съели {eat.lower()}, теперь вы не голодны.')
+		elif '6' == action:
 			if not wounded:
 				print('Вы не ранены и решаете не тратить расходники в пустую.')
 				continue
@@ -113,9 +113,34 @@ while True:
 			consumables[:] = (value for value in consumables if value != 'Бутылка')
 			consumable = consumables[randint(0, len(consumables) - 1)]
 			wounded = False
+			health += 5
+			if health > 100:
+				health = 100
 			items_in_inventory['consumables'].remove(consumable)
-			print(f'Вы использовали {consumable}, теперь вы не истекаете кровью.')
-		elif '0' in action:
+			print(f'Вы использовали {consumable.lower()}, теперь вы не истекаете кровью.')
+		elif 'cheats' == action.lower():
+			cheat = input('Введите чит-код: ')
+
+			if 'heal' in cheat.lower():
+				health = 100
+				wounded = False
+				hungry = False
+				hungry_time = -15
+				if monies <= 0:
+					monies = 1000
+				print(f'Вы полностью здоровы!')
+			elif 'monies;' in cheat.lower():
+				try:
+					h = cheat.split(';')
+					monies = int(h[1].strip().lower())
+					print(f'Новое кол-во денег: {monies}')
+				except:
+					pass
+			elif 'stop' == cheat.lower():
+				break
+			else:
+				print('Чит-код не существует.')
+		elif '0' == action:
 			break
 		else:
 			print('Некорректный выбор.')
