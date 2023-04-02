@@ -1,9 +1,9 @@
-from random import randint
+from random import randint, randrange
 from time import sleep
 
 defult_actions: str = ['Порыться в мусоре — 1', 'Сдать бутылки — 2', 'Посмотреть содержимое инвентаря — 3',
 					   'Посмотреть информацию — 4', 'Съесть что-нибудь — 5', 'Вылечить раны чем-то — 6',
-					   'Сходить в магаз — 7', 'Остановить игру — 0']
+					   'Сходить в магаз — 7', 'Украсть какую-то вещь — 8', 'Остановить игру — 0']
 passport_actions: str = ['Сменить имя — 1', 'Продолжить игру — 0']
 items = {
 	'food': {
@@ -16,9 +16,10 @@ items = {
 	},
 	'consumables': {
 		'trash': ['Бутылка', 'Грязный бинт', 'Кусок белого халата'],
-		'defult': ['Стерильный бинт;3']
+		'defult': ['Стерильный бинт;3', 'Пачка сигарет;5']
 	}
 }
+NPCs_names = ['Саня', 'Лёха', 'Аркаша', 'Димон', 'Константин']
 item_categories = ['food', 'clothes', 'consumables']
 items_in_inventory = {
 	'food': [],
@@ -30,7 +31,7 @@ monies = 0
 bottles = []
 health = 100
 hungry_time = 0
-health_statuses = ['Голоден', 'Ранен', f'Голодный и раненый', 'Всё хорошо']
+health_statuses = ['Голоден', 'Ранен', 'Голодный и раненый', 'Всё хорошо']
 wounded = False
 hungry = False
 player_name: str = 'Саня'
@@ -40,8 +41,7 @@ health_status = (health_statuses[1] if wounded
 				 else health_statuses[3]) if not hungry \
 	else (health_statuses[2] if wounded else health_statuses[0])
 social_statuses = ['Бомж', 'Главный бомж', 'Кассир', 'Менеджер', 'Главный менеджер', 'Начальник', 'Босс',
-				   'Главный босс',
-				   'Бизнесмен']
+				   'Главный босс', 'Бизнесмен']
 social_status = social_statuses[0]
 social_rating = 0
 null_social_rating = 0
@@ -57,6 +57,8 @@ print(f'https://github.com/FiveDragonYT/sanya-adventure\n\n')
 defult_actions_list: str = '; '.join(defult_actions)
 print(f'Доступные действия: {defult_actions_list}.')
 while True:
+	if debug:
+		print('ВКЛЮЧЁН ДЕБАГ РЕЖИМ... ')
 	action = input('Ваше действие: ').lower().strip()
 
 	if not action:
@@ -99,6 +101,13 @@ while True:
 						social_status = social_statuses[i]
 				print(f'Новый соц. статус: {social_status}\n'
 					  f'Новое кол-во соц. рейтинга: {social_rating}')
+			elif 'health;' in action:
+				h = action.split(';')
+				try:
+					health = int(h[1])
+				except:
+					pass
+				print(f'Новое кол-во здоровья: {health}')
 			elif 'suicide' == action:
 				health = 0
 				if debug:
@@ -111,11 +120,11 @@ while True:
 	else:
 		if '1' == action:
 			# получение рандомной категории предметов
-			random_category = str(item_categories[randint(0, len(item_categories)) - 1])
+			random_category = str(item_categories[randrange(len(item_categories))])
 			# получение рандомного массива предметов
 			items_in_trash = items[random_category]['trash']
 			# получение рандомного значения из массива предметов (получение предмета)
-			item_from_trash = str(items_in_trash[randint(0, len(items_in_trash) - 1)])
+			item_from_trash = str(items_in_trash[randrange(len(items_in_trash))])
 			print(f'Вы порылись в мусоре и нашли: {item_from_trash.lower()}.')
 			items_in_inventory[random_category].append(item_from_trash)
 			if not debug:
@@ -204,10 +213,9 @@ while True:
 				elif len(items_in_inventory['food']) <= 0:
 					print('У вас нет еды.')
 					continue
-				eat = items_in_inventory['food'][randint(0, len(items_in_inventory['food']) - 1)]
+				eat = items_in_inventory['food'].pop()
 				hungry = False
 				hungry_time = 0
-				items_in_inventory['food'].remove(eat)
 				print(f'Вы съели {eat.lower()}, теперь вы не голодны.')
 			else:
 				hungry = False
@@ -222,19 +230,18 @@ while True:
 					continue
 				consumables = items_in_inventory['consumables']
 				try:
-					consumables[:] = (value for value in consumables if value != 'Бутылка')
+					consumables[:] = (value for value in consumables if value != ('Бутылка' or 'Пачка сигарет'))
 				except:
 					print('Произошла некоторая ошибка, пожалуйста напишите отзыв и приложите к нему скриншот ошибки')
 					continue
 				if len(consumables) <= 0:
 					print('У вас нет расходников.')
 					continue
-				consumable = consumables[randint(0, len(consumables) - 1)]
+				consumable = consumables.pop()
 				wounded = False
 				health += 5
 				if health > 100:
 					health = 100
-				items_in_inventory['consumables'].remove(consumable)
 				print(f'Вы использовали {consumable.lower()}, теперь вы не истекаете кровью.')
 			else:
 				wounded = False
@@ -293,8 +300,41 @@ while True:
 							  f'{selected_item.lower()} стоит {item_price} рублей')
 			else:
 				print('Номера такой категории не существует')
+		elif '8' == action:
+			random_item = items['consumables']['defult'][randrange(len(items['consumables']['defult']))]
+			random_npc = NPCs_names[randrange(len(NPCs_names))]
+			if randint(0, 100) <= 65:
+				h = random_item.split(';')
+				random_item = h[0]
+				items_in_inventory['consumables'].append(random_item)
+				print(f'Вы попытались украсть какую-нибудь вещь у {random_npc} и... У Вас получилось!\n'
+					  f'Вы украли {random_item.lower()} у {random_npc}, '
+					  f'{random_item.lower()} добавлено в ваш инвентарь')
+				if randint(0, 100) <= 60:
+					getting_social_rating = randint(10, 30)
+					print(f'К сожалению, кто-то увидел, как Вы воруете. Социальный рейтинг -{getting_social_rating}')
+					null_social_rating -= getting_social_rating
+					social_rating -= getting_social_rating
+					for i in range(round(social_rating / 100)):
+						if null_social_rating >= 100:
+							null_social_rating -= 100
+							i: int = social_statuses.index(social_status)
+							i += 1
+							social_status = social_statuses[i]
+					print(f'Ваш социальный статус: {social_status}\n'
+							f'Ваше кол-во социального рейтинга: {social_rating}')
+			else:
+				print(f'Вы попытались украсть какую-нибудь вещь у {random_npc} и... У Вас не получилось...\n'
+					  f'{random_npc} вызвал полицию, Вы арестованы...')
+				break
 		elif '0' == action:
-			break
+			sure = input('Введите 0 еще раз, если хотите выйти из игры (весь прогресс будет утерян!)\n').lower().strip()
+			if sure == '0':
+				break
+			else:
+				print('Вы решили не выходить из игры, молодцы!\n'
+					  'Это действие не будет считаться.')
+				continue
 		else:
 			print('Некорректный выбор.')
 
@@ -326,3 +366,19 @@ while True:
 
 print(f'Игра окончена...')
 sleep(3.5)
+end_not_end = True
+while end_not_end:
+	action = input('Нажмите Enter для выхода...\n').lower().strip()
+	if action.startswith('/'):
+		action = action.replace('/', '')
+		if 'stat' in action:
+			health_status = (health_statuses[1] if wounded
+							 else health_statuses[3]) if not hungry \
+				else (health_statuses[2] if wounded else health_statuses[0])
+			print('')
+			print(f'Имя: {player_name}\n'
+				  f'{monies} рублёв в кармане\n'
+				  f'{health_status}, здоровье: {health if not wounded and not hungry else health - 1}%\n'
+				  f'Ваш социальный статус: {social_status}\n')
+	else:
+		exit()
